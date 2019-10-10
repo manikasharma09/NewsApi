@@ -1,20 +1,27 @@
 from django.shortcuts import render
+from django.http import JsonResponse
 from newsapi import NewsApiClient
+import json
+
+NEWS_API_KEY='6978d2057e684c708b85fe09b24be6a7'
 
 def index(request):
-	newsapi=NewsApiClient(api_key='6978d2057e684c708b85fe09b24be6a7')
+	return render(request, 'index.html')
+
+def news(request):
+	newsapi=NewsApiClient(api_key=NEWS_API_KEY)
 	top=newsapi.get_top_headlines(sources='bbc-news')
 
 	l=top['articles']
-	news=[]
-	img=[]
-	desc=[]
-
+	newsDict={}
+	c=0
 	for i in range(len(l)):
 		f=l[i]
-		news.append(f['title'])
-		img.append(f['urlToImage'])
-		desc.append(f['description'])
-		mylist=zip(news,desc,img)
+		newsDict[c]={
+			'title':f['title'],
+			'urlToImage':f['urlToImage'],
+			'description':f['description']
+		}
+		c+=1
 
-		return render(request,'index.html',context={"mylist":mylist})
+	return JsonResponse({'news':json.dumps(newsDict), 'status':'200'})
